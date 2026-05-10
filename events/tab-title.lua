@@ -261,15 +261,12 @@ local function create_title(process_name, base_title, max_width, inset)
       title = base_title
    end
 
-   if wezterm.column_width(title) > max_width - inset then
-      local diff = wezterm.column_width(title) - max_width + inset
-      title = wezterm.truncate_right(title, wezterm.column_width(title) - diff)
-   else
-      local padding = max_width - wezterm.column_width(title) - inset
-      title = title .. string.rep(' ', padding)
+   local available_width = max_width - inset
+   if available_width < 1 then
+      available_width = 1
    end
 
-   return title
+   return wezterm.truncate_right(title, available_width)
 end
 
 local progress_stale = (function()
@@ -335,7 +332,9 @@ local function check_progress(options, tab_index, panes)
       local icon = nil
       local pct = 0
 
-      if prog == 'Indeterminate' then
+      if not prog then
+         goto continue
+      elseif prog == 'Indeterminate' then
          status = 'indeterminate'
          icon = _ind_to_frame()
       elseif prog.Percentage ~= nil then
@@ -351,6 +350,8 @@ local function check_progress(options, tab_index, panes)
             table.insert(progress, { icon = icon, status = status })
          end
       end
+
+      ::continue::
    end
 
    return progress
@@ -385,11 +386,7 @@ local function check_unseen_output(options, is_active, panes)
    end
 
    if count > 0 then
-      if options.unseen_icon == 'circle' then
-         icon = ICON_UNSEEN[options.unseen_icon]
-      else
-         icon = ICON_UNSEEN[options.unseen_icon .. '_' .. count]
-      end
+      icon = '*'
    end
 
    return icon
@@ -448,8 +445,11 @@ function Tab:update_cells(event_opts, tab, hover, max_width)
       tab_state = 'hover'
    end
 
-   local process_name = clean_process_name(tab.active_pane.foreground_process_name)
-   local base_title, prefix_icon = create_base_title(tab.active_pane.title, process_name)
+   local process_name = ''
+   local base_title, prefix_icon = create_base_title(
+      tab.tab_title ~= '' and tab.tab_title or tab.active_pane.title,
+      process_name
+   )
    local unseen_icon = check_unseen_output(event_opts, tab.is_active, tab.panes)
    local progress = check_progress(event_opts, tab.tab_index, tab.panes)
    local inset = TITLE_INSET.default

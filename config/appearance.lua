@@ -4,7 +4,7 @@ local colors = require('colors.custom')
 
 ---@type Config
 return {
-   max_fps = 120,
+   max_fps = 60,
    front_end = 'WebGpu', ---@type 'WebGpu' | 'OpenGL' | 'Software'
    webgpu_power_preference = 'HighPerformance',
    webgpu_preferred_adapter = gpu_adapters:pick_best(),
@@ -13,7 +13,7 @@ return {
    underline_thickness = '1.5pt',
 
    -- cursor
-   animation_fps = 120,
+   animation_fps = 60,
    cursor_blink_ease_in = 'EaseOut',
    cursor_blink_ease_out = 'EaseOut',
    default_cursor_style = 'BlinkingBlock',
@@ -23,7 +23,7 @@ return {
    colors = colors,
 
    -- background: pass in `true` if you want wezterm to start with focus mode on (no bg images)
-   background = backdrops:initial_options({ no_img = false }),
+   background = backdrops:initial_options({ no_img = true }),
 
    -- scrollbar
    enable_scroll_bar = true,
@@ -51,8 +51,12 @@ return {
    },
    adjust_window_size_when_changing_font_size = false,
    window_close_confirmation = 'NeverPrompt',
+   window_decorations = 'INTEGRATED_BUTTONS|RESIZE',
+   integrated_title_button_alignment = 'Left',
+   integrated_title_button_color = '#7fdbca',
    window_frame = {
-      active_titlebar_bg = '#090909',
+      active_titlebar_bg = '#071923',
+      inactive_titlebar_bg = '#05131c',
       -- font = fonts.font,
       -- font_size = fonts.font_size,
    },

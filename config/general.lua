@@ -9,6 +9,22 @@ return {
 
    scrollback_lines = 20000,
 
+   quick_select_patterns = {
+      [[\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d{2,5})?(?:/[^\s"'`<>]*)?\b]],
+      [[\b[\w][\w.-]+/[A-Za-z0-9_.-]+#\d+\b]],
+      [[\b[\w][\w.-]+/[A-Za-z0-9_.-]+@[0-9a-fA-F]{7,40}\b]],
+      [[\b[A-Z][A-Z0-9]+-\d+\b]],
+      [[\bPR-\d+\b]],
+      [[\b(?:feat|feature|fix|bugfix|chore|docs|refactor|test|perf|ci|build|release|hotfix)/[A-Za-z0-9._/-]+\b]],
+      '\\b(?:request|req|trace|span)[-_ ]?id[=:]\\s*[0-9a-fA-F-]{8,}\\b',
+      [[\b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b]],
+      [[\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?\b]],
+      [[\b\d{4}-\d{2}-\d{2}\b]],
+      [[\b\d{2}:\d{2}:\d{2}\b]],
+      [[(?:~|/)[^\s:]+(?::\d+){1,2}\b]],
+      [[(?:\./|\../)[^\s:]+(?::\d+){1,2}\b]],
+   },
+
    hyperlink_rules = {
       -- Matches: a URL in parens: (URL)
       {
