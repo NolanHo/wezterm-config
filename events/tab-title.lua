@@ -16,14 +16,16 @@ local attr = Cells.attr
 -- =======================================
 
 ---@class Event.TabTitleOptionsInput
----@field unseen_icon? 'circle' | 'numbered_circle' | 'numbered_box'
+---@field unseen_icon? 'none' | 'circle' | 'numbered_circle' | 'numbered_box'
 ---@field hide_active_tab_unseen? boolean
 ---@field show_progress? boolean
+---@field title_refresh_interval_seconds? number
 
 ---@class Event.TabTitleOptions
----@field unseen_icon 'circle' | 'numbered_circle' | 'numbered_box'
+---@field unseen_icon 'none' | 'circle' | 'numbered_circle' | 'numbered_box'
 ---@field hide_active_tab_unseen boolean
 ---@field show_progress boolean
+---@field title_refresh_interval_seconds number
 
 ---Setup options for the tab title
 ---@type OptsValidator
@@ -31,7 +33,7 @@ local EVENT_OPTS = OptsValidator:new({
    {
       name = 'unseen_icon',
       type = 'string',
-      enum = { 'circle', 'numbered_circle', 'numbered_box' },
+      enum = { 'none', 'circle', 'numbered_circle', 'numbered_box' },
       default = 'circle',
    },
    {
@@ -43,6 +45,11 @@ local EVENT_OPTS = OptsValidator:new({
       name = 'show_progress',
       type = 'boolean',
       default = true,
+   },
+   {
+      name = 'title_refresh_interval_seconds',
+      type = 'number',
+      default = 60,
    },
 })
 
@@ -157,29 +164,29 @@ local RV = {
 ---@type table<string, Cells.SegmentColors>
 -- stylua: ignore
 local colors = {
-   text_default          = { bg = '#45475A', fg = '#1C1B19' },
-   text_hover            = { bg = '#7188b0', fg = '#1C1B19' },
-   text_active           = { bg = '#89b4fa', fg = '#11111B' },
+   text_default          = { bg = '#414868', fg = '#1a1b26' },
+   text_hover            = { bg = '#545c7e', fg = '#1a1b26' },
+   text_active           = { bg = '#7aa2f7', fg = '#16161e' },
 
-   unseen_output_default = { bg = '#45475A', fg = '#FFA066' },
-   unseen_output_hover   = { bg = '#7188b0', fg = '#FFA066' },
-   unseen_output_active  = { bg = '#89b4fa', fg = '#FFA066' },
+   unseen_output_default = { bg = '#414868', fg = '#ff9e64' },
+   unseen_output_hover   = { bg = '#545c7e', fg = '#ff9e64' },
+   unseen_output_active  = { bg = '#7aa2f7', fg = '#ff9e64' },
 
-   scircle_default       = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#45475A' },
-   scircle_hover         = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#7188b0' },
-   scircle_active        = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#89b4fa' },
+   scircle_default       = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#414868' },
+   scircle_hover         = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#545c7e' },
+   scircle_active        = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#7aa2f7' },
 
-   progress_percentage_default    = { bg = '#45475A', fg = '#9df296' },
-   progress_percentage_hover      = { bg = '#7188b0', fg = '#9df296' },
-   progress_percentage_active     = { bg = '#89b4fa', fg = '#9df296' },
+   progress_percentage_default    = { bg = '#414868', fg = '#9ece6a' },
+   progress_percentage_hover      = { bg = '#545c7e', fg = '#9ece6a' },
+   progress_percentage_active     = { bg = '#7aa2f7', fg = '#9ece6a' },
 
-   progress_error_default         = { bg = '#45475A', fg = '#fa3970' },
-   progress_error_hover           = { bg = '#7188b0', fg = '#fa3970' },
-   progress_error_active          = { bg = '#89b4fa', fg = '#fa3970' },
+   progress_error_default         = { bg = '#414868', fg = '#f7768e' },
+   progress_error_hover           = { bg = '#545c7e', fg = '#f7768e' },
+   progress_error_active          = { bg = '#7aa2f7', fg = '#f7768e' },
 
-   progress_indeterminate_default = { bg = '#45475A', fg = '#f5e0dc' },
-   progress_indeterminate_hover   = { bg = '#7188b0', fg = '#f5e0dc' },
-   progress_indeterminate_active  = { bg = '#89b4fa', fg = '#f5e0dc' },
+   progress_indeterminate_default = { bg = '#414868', fg = '#c0caf5' },
+   progress_indeterminate_hover   = { bg = '#545c7e', fg = '#c0caf5' },
+   progress_indeterminate_active  = { bg = '#7aa2f7', fg = '#c0caf5' },
 }
 
 ---
@@ -362,6 +369,10 @@ end
 ---@param panes PaneInformation[]
 ---@return UnseenOutputIcon|nil
 local function check_unseen_output(options, is_active, panes)
+   if options.unseen_icon == 'none' then
+      return nil
+   end
+
    if options.hide_active_tab_unseen and is_active then
       return nil
    end
@@ -413,6 +424,10 @@ local title_cells = Cells:new()
 ---@field has_icon boolean
 ---@field has_unseen boolean
 ---@field has_progress boolean
+---@field last_rendered FormatItem[]?
+---@field last_refresh_time integer
+---@field last_tab_state string?
+---@field last_max_width number?
 local Tab = {}
 Tab.__index = Tab
 
@@ -424,9 +439,25 @@ function Tab:new()
       has_icon = false,
       has_unseen = false,
       has_progress = false,
+      last_rendered = nil,
+      last_refresh_time = 0,
+      last_tab_state = nil,
+      last_max_width = nil,
    }
 
    return setmetatable(tab, self)
+end
+
+---@param tab TabInformation
+---@param hover boolean
+---@return string
+local function get_tab_state(tab, hover)
+   if tab.is_active then
+      return 'active'
+   elseif hover then
+      return 'hover'
+   end
+   return 'default'
 end
 
 ---@param event_opts Event.TabTitleOptions
@@ -438,12 +469,7 @@ function Tab:update_cells(event_opts, tab, hover, max_width)
    self.has_unseen = false
    self.has_progress = false
 
-   local tab_state = 'default'
-   if tab.is_active then
-      tab_state = 'active'
-   elseif hover then
-      tab_state = 'hover'
-   end
+   local tab_state = get_tab_state(tab, hover)
 
    local process_name = ''
    local base_title, prefix_icon = create_base_title(
@@ -516,6 +542,7 @@ end
 function Tab:update_and_lock_title(title)
    self.locked_title = title
    self.title_locked = true
+   self.last_refresh_time = 0
 end
 
 ---@return FormatItem[]
@@ -527,7 +554,30 @@ function Tab:render()
    if self.has_progress then
       variant_idx = variant_idx + 2
    end
-   return title_cells:render(RV[variant_idx])
+   self.last_rendered = title_cells:render(RV[variant_idx])
+   return self.last_rendered
+end
+
+---@param event_opts Event.TabTitleOptions
+---@param tab TabInformation
+---@param hover boolean
+---@param max_width number
+---@return boolean
+function Tab:should_refresh(event_opts, tab, hover, max_width)
+   if not self.last_rendered then
+      return true
+   end
+
+   if event_opts.title_refresh_interval_seconds <= 0 then
+      return true
+   end
+
+   local tab_state = get_tab_state(tab, hover)
+   if self.last_tab_state ~= tab_state or self.last_max_width ~= max_width then
+      return true
+   end
+
+   return os.time() - self.last_refresh_time >= event_opts.title_refresh_interval_seconds
 end
 
 ---@type Tab[]
@@ -587,6 +637,7 @@ M.setup = function(opts)
       local tab = window:active_tab()
       local id = tab:tab_id()
       tab_list[id].title_locked = false
+      tab_list[id].last_refresh_time = 0
    end)
 
    -- CUSTOM EVENT
@@ -607,8 +658,16 @@ M.setup = function(opts)
       end
 
       -- `max_width` refers to the `tab_max_width` option set in `config/appearance.lua`
-      tab_list[tab.tab_id]:update_cells(valid_opts, tab, hover, max_width)
-      return tab_list[tab.tab_id]:render()
+      local tab_info = tab_list[tab.tab_id]
+      if tab_info:should_refresh(valid_opts, tab, hover, max_width) then
+         tab_info:update_cells(valid_opts, tab, hover, max_width)
+         tab_info.last_refresh_time = os.time()
+         tab_info.last_tab_state = get_tab_state(tab, hover)
+         tab_info.last_max_width = max_width
+         return tab_info:render()
+      end
+
+      return tab_info.last_rendered
    end)
 end
 

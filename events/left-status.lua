@@ -13,8 +13,8 @@ local GLYPH_KEY = nf.md_key --[[ '󰌆' ]]
 
 ---@type table<string, Cells.SegmentColors>
 local colors = {
-   default = { bg = '#fab387', fg = '#1c1b19' },
-   scircle = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#fab387' },
+   default = { bg = '#ff9e64', fg = '#1a1b26' },
+   scircle = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#ff9e64' },
 }
 
 local cells = Cells:new()
@@ -42,6 +42,7 @@ M.setup = function()
          res = cells:render_all()
       end
       window:set_left_status(wezterm.format(res))
+      window:set_right_status('')
    end)
 end
 
