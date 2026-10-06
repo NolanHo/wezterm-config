@@ -164,28 +164,28 @@ local RV = {
 ---@type table<string, Cells.SegmentColors>
 -- stylua: ignore
 local colors = {
-   text_default          = { bg = '#414868', fg = '#1a1b26' },
-   text_hover            = { bg = '#545c7e', fg = '#1a1b26' },
+   text_default          = { bg = '#1f2335', fg = '#a9b1d6' },
+   text_hover            = { bg = '#292e42', fg = '#c0caf5' },
    text_active           = { bg = '#7aa2f7', fg = '#16161e' },
 
-   unseen_output_default = { bg = '#414868', fg = '#ff9e64' },
-   unseen_output_hover   = { bg = '#545c7e', fg = '#ff9e64' },
+   unseen_output_default = { bg = '#1f2335', fg = '#ff9e64' },
+   unseen_output_hover   = { bg = '#292e42', fg = '#ff9e64' },
    unseen_output_active  = { bg = '#7aa2f7', fg = '#ff9e64' },
 
-   scircle_default       = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#414868' },
-   scircle_hover         = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#545c7e' },
+   scircle_default       = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#1f2335' },
+   scircle_hover         = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#292e42' },
    scircle_active        = { bg = 'rgba(0, 0, 0, 0.4)', fg = '#7aa2f7' },
 
-   progress_percentage_default    = { bg = '#414868', fg = '#9ece6a' },
-   progress_percentage_hover      = { bg = '#545c7e', fg = '#9ece6a' },
+   progress_percentage_default    = { bg = '#1f2335', fg = '#9ece6a' },
+   progress_percentage_hover      = { bg = '#292e42', fg = '#9ece6a' },
    progress_percentage_active     = { bg = '#7aa2f7', fg = '#9ece6a' },
 
-   progress_error_default         = { bg = '#414868', fg = '#f7768e' },
-   progress_error_hover           = { bg = '#545c7e', fg = '#f7768e' },
+   progress_error_default         = { bg = '#1f2335', fg = '#f7768e' },
+   progress_error_hover           = { bg = '#292e42', fg = '#f7768e' },
    progress_error_active          = { bg = '#7aa2f7', fg = '#f7768e' },
 
-   progress_indeterminate_default = { bg = '#414868', fg = '#c0caf5' },
-   progress_indeterminate_hover   = { bg = '#545c7e', fg = '#c0caf5' },
+   progress_indeterminate_default = { bg = '#1f2335', fg = '#c0caf5' },
+   progress_indeterminate_hover   = { bg = '#292e42', fg = '#c0caf5' },
    progress_indeterminate_active  = { bg = '#7aa2f7', fg = '#c0caf5' },
 }
 

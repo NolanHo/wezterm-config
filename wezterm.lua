@@ -1,5 +1,9 @@
 local Config = require('config')
 
+-- scan backdrops up-front (`wezterm.glob` only works during the initial config
+-- load) and pick the startup image; cycle with CMD+, / CMD+. / CMD+b
+require('utils.backdrops'):scan_images_dir():set_img_name('astro-jelly')
+
 require('events.left-status').setup()
 require('events.tab-title').setup({
    hide_active_tab_unseen = true,

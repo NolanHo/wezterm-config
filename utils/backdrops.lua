@@ -11,6 +11,10 @@ math.random()
 
 local GLOB_PATTERN = '*.{jpg,jpeg,png,gif,bmp,ico,tiff,pnm,dds,tga}'
 
+---Opacity of the theme-colored veil drawn over the background image.
+---Lower = image more visible; 1.0 would hide it completely.
+local VEIL_OPACITY = 0.78
+
 ---@class BackDrops
 ---@field current_idx number index of current image
 ---@field images string[] background images
@@ -55,7 +59,12 @@ end
 ---   This throws a coroutine error if the function is invoked in outside of `wezterm.lua` in the -
 ---   initial load of the Terminal config.
 function BackDrops:scan_images_dir()
-   self.images = wezterm.glob(self.images_dir .. GLOB_PATTERN)
+   local images = wezterm.glob(self.images_dir .. GLOB_PATTERN)
+   -- `wezterm.glob` is only reliable during the initial config load; on a
+   -- hot-reload it may come back empty. Keep the previous list in that case.
+   if #images > 0 then
+      self.images = images
+   end
    return self
 end
 
@@ -65,12 +74,17 @@ end
 function BackDrops:_gen_opts()
    local bg_opts = {}
 
-   if #self.images > 0 then
-      table.insert(bg_opts, {
-         source = { File = self.images[self.current_idx] },
-         horizontal_align = 'Center',
-      })
+   if #self.images == 0 then
+      -- No images available (e.g. `scan_images_dir` yielded nothing): an
+      -- opaque plain background. Without this, the translucent veil below
+      -- would wash the window out against the bare window backing.
+      return self:_gen_no_img_opts()
    end
+
+   table.insert(bg_opts, {
+      source = { File = self.images[self.current_idx] },
+      horizontal_align = 'Center',
+   })
 
    table.insert(bg_opts, {
       source = { Color = colors.background },
@@ -78,7 +92,7 @@ function BackDrops:_gen_opts()
       width = '120%',
       vertical_offset = '-10%',
       horizontal_offset = '-10%',
-      opacity = 0.96,
+      opacity = VEIL_OPACITY,
    })
 
    return bg_opts
@@ -182,6 +196,19 @@ function BackDrops:set_img(window, idx)
 
    self.current_idx = idx
    self:_set_opt(window, self:_gen_opts())
+end
+
+---Select a background by (sub)string match on the file name; unlike `set_img`
+---this needs no window, so it can pick the startup image from `wezterm.lua`
+---@param name string substring of the file name, e.g. 'frieren'
+function BackDrops:set_img_name(name)
+   for idx, file in ipairs(self.images) do
+      if file:find(name, 1, true) then
+         self.current_idx = idx
+         break
+      end
+   end
+   return self
 end
 
 ---Toggle the focus mode
