@@ -104,7 +104,16 @@ end
 function BackDrops:_gen_no_img_opts()
    return {
       {
-         source = { Color = colors.background },
+         -- Tokyo Night vertical wash; keeps the focus-mode window from reading
+         -- as a flat slab and matches the palette used by `colors.custom`.
+         source = {
+            Gradient = {
+               orientation = 'Vertical',
+               colors = { '#1a1b26', '#24283b', '#1f2335' },
+               interpolation = 'Linear',
+               blend = 'Oklab',
+            },
+         },
          height = '120%',
          width = '120%',
          vertical_offset = '-10%',

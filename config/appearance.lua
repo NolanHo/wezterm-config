@@ -55,32 +55,56 @@ return {
 
    -- window
    window_padding = {
-      left = 0,
-      right = 0,
+      left = 6,
+      right = 6,
       top = 10,
       bottom = 7.5,
    },
    adjust_window_size_when_changing_font_size = false,
    window_close_confirmation = 'NeverPrompt',
+   -- No window-level glass. macOS runs the background blur inside WindowServer,
+   -- and each frame the window redraws it re-samples whatever is behind it; with
+   -- a 5K/120Hz display plus live content underneath this dominated GPU time
+   -- (WindowServer ~26% of wall clock in a 20s sample). Keep the frame styling
+   -- in-app instead: border, titlebar colors and padding cost nothing.
    window_background_opacity = 1.0,
    text_background_opacity = 1.0,
    macos_window_background_blur = 0,
    window_decorations = 'INTEGRATED_BUTTONS|RESIZE|MACOS_FORCE_DISABLE_SHADOW',
    integrated_title_button_alignment = 'Left',
    integrated_title_button_color = '#7fdbca',
+   -- Outer frame: titlebar/border/button colors from the Tokyo Night palette.
+   -- Border widths are a hairline, brightening the window edge against busy
+   -- wallpapers. See `window_frame` in the docs for the full field list.
    window_frame = {
       active_titlebar_bg = '#071923',
       inactive_titlebar_bg = '#05131c',
+      active_titlebar_fg = '#c0caf5',
+      inactive_titlebar_fg = '#565f89',
+      active_titlebar_border_bottom = '#7aa2f7',
+      inactive_titlebar_border_bottom = '#1f2335',
+      -- `button_*` only applies once integrated_title_button_style is switched
+      -- away from the default 'MacosNative' (which draws the system traffic
+      -- lights and ignores these colors).
+      button_bg = '#071923',
+      button_fg = '#7fdbca',
+      button_hover_bg = '#7aa2f7',
+      button_hover_fg = '#1a1b26',
+      border_left_width = '1px',
+      border_right_width = '1px',
+      border_top_height = '1px',
+      border_bottom_height = '1px',
+      border_left_color = '#2f3b5c',
+      border_right_color = '#2f3b5c',
+      border_top_color = '#2f3b5c',
+      border_bottom_color = '#2f3b5c',
       -- font = fonts.font,
       -- font_size = fonts.font_size,
    },
-   -- inactive_pane_hsb = {
-   --    saturation = 0.9,
-   --    brightness = 0.65,
-   -- },
+   -- Dim panes that don't have focus so the active split reads at a glance.
    inactive_pane_hsb = {
-      saturation = 1,
-      brightness = 1,
+      saturation = 0.9,
+      brightness = 0.75,
    },
 
    visual_bell = {
