@@ -12,7 +12,6 @@ require('events.tab-title').setup({
    title_refresh_interval_seconds = 60,
 })
 require('events.new-tab-button').setup()
-require('events.gui-startup').setup()
 
 return Config:init()
    :append(require('config.appearance'))
